@@ -1,7 +1,7 @@
 #ifndef GESTURE_H
 #define GESTURE_H
 
-enum class  GestureState {
+enum class  GestureState : uint8_t {
   READY = 0,
   IN_PROGRESS = 1,
   COMPLETE = 2
@@ -9,11 +9,11 @@ enum class  GestureState {
 
 class Gesture {
   public:
-    Gesture(uint32_t startValue, uint32_t endValue) : _startValue(startValue), _endValue(endValue), _state(GestureState::READY) {
+    Gesture(uint8_t startValue, uint8_t endValue) : _startValue(startValue), _endValue(endValue), _state(GestureState::READY) {
 
     }
 
-    virtual void update(uint32_t currentPosition) {
+    virtual void update(uint8_t currentPosition) {
       switch (_state) {
         case GestureState::READY:
           if (startGesture(currentPosition)) {
@@ -35,16 +35,16 @@ class Gesture {
       }
     }
 
-    virtual bool startGesture(uint32_t value) = 0;
-    virtual bool endGesture(uint32_t value) = 0;
+    virtual bool startGesture(uint8_t value) = 0;
+    virtual bool endGesture(uint8_t value) = 0;
 
     GestureState getState() {
       return _state;
     }
 
   protected:
-    uint32_t _startValue;
-    uint32_t _endValue;
+    uint8_t _startValue;
+    uint8_t _endValue;
 
   private:
     GestureState _state;
@@ -52,28 +52,28 @@ class Gesture {
 
 class GestureRight : public Gesture {
   public:
-    GestureRight(uint32_t startValue, uint32_t endValue) : Gesture(startValue, endValue) {
+    GestureRight(uint8_t startValue, uint8_t endValue) : Gesture(startValue, endValue) {
     }
 
-    virtual bool startGesture(uint32_t value) {
+    virtual bool startGesture(uint8_t value) {
       return 0 < value && value < _startValue;
     }
 
-    virtual bool endGesture(uint32_t value) {
+    virtual bool endGesture(uint8_t value) {
       return value > _endValue;
     }
 };
 
 class GestureLeft : public Gesture {
   public:
-    GestureLeft(uint32_t startValue, uint32_t endValue) : Gesture(startValue, endValue) {
+    GestureLeft(uint8_t startValue, uint8_t endValue) : Gesture(startValue, endValue) {
     }
 
-    virtual bool startGesture(uint32_t value) {
+    virtual bool startGesture(uint8_t value) {
       return value > _startValue;
     }
 
-    virtual bool endGesture(uint32_t value) {
+    virtual bool endGesture(uint8_t value) {
       return value > 0 && value < _endValue;
     }
 };

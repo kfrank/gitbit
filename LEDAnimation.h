@@ -74,7 +74,7 @@ class LEDAnimation : public Animation {
     Color _endValue;
     LED* _led;
 
-    uint32_t _duration_msec;
+    uint16_t _duration_msec;
     uint32_t _startTime_msec;
 };
 

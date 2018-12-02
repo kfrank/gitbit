@@ -1,97 +1,114 @@
 #include "SelectableLCD.h"
 #include "Button.h"
-
-//
-// INCLUDES
-//
-const std::vector<String> branchNames = {"design/headersidebar", "design/challenges", "dev/npm", "kf/home_news"};
-SelectableLCD* selectableLCD;
-
-// LCD
-
-
-// LED
 #include "LEDAnimation.h"
 #include "Swiper.h"
+
+// Configuration
+const std::vector<String> BRANCH_NAMES = {"design/headersidebar", "design/challenges", "dev/npm", "kf/home_news"};
+const std::vector<uint8_t> TEAM_LEDS = {1, 2, 3, 4, 5, 6};
+const std::vector<uint8_t> STATUS_LEDS = {7, 8, 9, 10, 11};
+const uint8_t NUM_LEDS = 60;
+const uint8_t LED_DATA_PIN = 3;
+
+const Color GREEN = {255, 255, 200};
+const Color BLUE = {180, 255, 200};
+const Color BLACK = {0, 0, 0};
+
+//Swiper
 Swiper swiper(3);
 
-// LEDs
-const std::vector<uint8_t> teamLeds = {1, 2, 3, 4, 5, 6};
+//LCD
+SelectableLCD selectableLCD(2);
 
-Animation* contributerAnimation;
+//LEDs
+std::vector<LED*> leds;
+CRGB ledStrip[NUM_LEDS];
 
-const std::vector<uint8_t> statusLeds = {7, 8, 9, 10, 11};
+//Button
+Button teamMemberCommitTrigger(12);
 
-std::vector<LED*> ledStrip;
-std::vector<Animation*> animationScript;
-Animation* statusParallelAnimation;
+//Animations
+std::vector<Animation*> teamCommitAnimations;
+Animation* pushAnimation;
 
-// Button
-uint32_t buttonState = 0;
+void initializeLeds(const std::vector<uint8_t>& indexes) {
+  for (uint8_t index : indexes) {
+    LED* led = new LED(index, ledStrip);
+    leds.push_back(led);
+  }
+}
 
-//
-// ARDUINO
-//
+void createPushAnimation() {
+  std::vector<Animation*> pushAnimationScript;
+  std::vector<Animation*> sequentialScript;
+  //for (uint8_t index : STATUS_LEDS) {
+    sequentialScript.push_back(new LEDAnimation(leds[0], BLUE, BLUE, 1000));
+    sequentialScript.push_back(new LEDAnimation(leds[1], BLUE, BLUE, 1000));
+  //}
+  //pushAnimationScript.push_back(new SequentialAnimation(sequentialScript));
 
-SequentialAnimation* testAnimation;
+  /*std::vector<Animation*> parallelScript;
+  for (uint8_t index : STATUS_LEDS) {
+    parallelScript.push_back(new LEDAnimation(leds[index], BLACK, BLACK, 1000));
+  }
+  pushAnimationScript.push_back(new ParallelAnimation(parallelScript));
+  pushAnimationScript.push_back(new LEDAnimation(leds.back(), GREEN, GREEN, 5000));*/
+  pushAnimation = new SequentialAnimation(sequentialScript);
+}
 
 void setup() {
   Serial.begin(9600);
 
-  // LCD pot
-  pinMode(2, INPUT);
-  pinMode(3, INPUT);
+  swiper.init();
+  teamMemberCommitTrigger.init();
 
-  // Prototype Button
-  pinMode(12, INPUT);
-
-  // LCD setup
-  selectableLCD = new SelectableLCD(2);
-  selectableLCD->setValues(branchNames);
+  selectableLCD.init(16, 2);
+  selectableLCD.setValues(BRANCH_NAMES);
 
   // LED setup
-  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  FastLED.addLeds<NEOPIXEL, LED_DATA_PIN>(ledStrip, NUM_LEDS);
 
-  // Contributer LEDs
-  //LED* contributer = new LED(contributerLed);
+  // initialize LEDs
+  initializeLeds(STATUS_LEDS);
+  initializeLeds(TEAM_LEDS);
 
-  // Status LEDs
-  for (uint32_t statusLed : statusLeds) {
-    LED* led = new LED(statusLed);
-    ledStrip.push_back(led);
-
-    //animationScript.push_back(new LEDAnimation(led, {20, 255, 150}, {123, 255, 100}, 2000));
+  for (uint8_t index : TEAM_LEDS) {
+    teamCommitAnimations.push_back(new LEDAnimation(leds[index], GREEN, BLUE, 10000));
   }
+
+  createPushAnimation();
+
+
+  //animationScript.push_back(new LEDAnimation(led, {20, 255, 150}, {123, 255, 100}, 2000));
 
   /*statusParallelAnimation = new ParallelAnimation(animationScript);
 
-  LED* led = new LED(teamLeds[3]);
-  contributerAnimation = new LEDAnimation(led, {255, 255, 200}, {180, 255, 80}, 20000);*/
+    LED* led = new LED(teamLeds[3]);
+    contributerAnimation = new LEDAnimation(led, {255, 255, 200}, {180, 255, 80}, 20000);
 
 
-  std::vector<Animation*> script;
+    std::vector<Animation*> script;
 
-  script.push_back(new LEDAnimation(ledStrip[0], {20, 255, 0}, {20, 255, 150}, 500));
-  script.push_back(new LEDAnimation(ledStrip[1], {20, 255, 0}, {20, 255, 150}, 500));
+    script.push_back(new LEDAnimation(ledStrip[0], {20, 255, 150}, {123, 255, 100}, 2000));
+    script.push_back(new LEDAnimation(ledStrip[1], {20, 255, 150}, {123, 255, 100}, 2000));
 
-  std::vector<Animation*> parallelScript;
-  parallelScript.push_back(new LEDAnimation(ledStrip[0], {20, 255, 150}, {123, 255, 100}, 2000));
-  parallelScript.push_back(new LEDAnimation(ledStrip[1], {20, 255, 150}, {123, 255, 100}, 2000));
+    std::vector<Animation*> parallelScript;
+    parallelScript.push_back(new LEDAnimation(ledStrip[0], {20, 255, 150}, {123, 255, 100}, 2000));
+    parallelScript.push_back(new LEDAnimation(ledStrip[1], {20, 255, 150}, {123, 255, 100}, 2000));
 
-  script.push_back(new ParallelAnimation(parallelScript));
+    script.push_back(new ParallelAnimation(parallelScript));
 
-  testAnimation = new SequentialAnimation(script);
+    testAnimation = new SequentialAnimation(script);*/
 
 }
 
-Button button(12);
+
 
 void loop() {
-  // Soft Pot push and pull
   swiper.update();
+  selectableLCD.update();
 
-  // Knob + LCD
-  selectableLCD->update();
+
 
   // LEDs
 
@@ -132,15 +149,15 @@ void loop() {
     statusParallelAnimation->reset();
     }*/
 
-  if (!testAnimation->isRunning()) {
+  /*if (!testAnimation->isRunning()) {
     testAnimation->start();
-  }
+    }
 
-  testAnimation->update();
+    testAnimation->update();
 
-  if (testAnimation->isComplete()) {
+    if (testAnimation->isComplete()) {
     testAnimation->reset();
-  }
+    }*/
 
 
 

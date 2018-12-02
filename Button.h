@@ -2,38 +2,42 @@
 #define BUTTON_H
 
 class Button {
-public:
-Button(uint32_t pin) : _pin(pin), 
-_isTriggered(false), 
-_isPushed(false) {
-  
-}
+  public:
+    Button(uint8_t pin) : _pin(pin),
+      _isTriggered(false),
+      _isPushed(false) {
 
-void update() {
-  bool pushed = digitalRead(_pin) == HIGH;
+    }
 
-  if(_isPushed != pushed && pushed) {
-    _isTriggered = true;
-  }  else {
-    _isTriggered = false;
-  }
+    void init() {
+      pinMode(_pin, INPUT);
+    }
 
-  _isPushed = pushed;
-}
+    void update() {
+      bool pushed = digitalRead(_pin) == HIGH;
 
-bool isPushed() {
-  return _isPushed;
-}
+      if (_isPushed != pushed && pushed) {
+        _isTriggered = true;
+      }  else {
+        _isTriggered = false;
+      }
 
-bool isTriggered() {
-  return _isTriggered;
-}
+      _isPushed = pushed;
+    }
 
-private:
-uint32_t _pin;
-bool _isTriggered;
-bool _isPushed;
-  
+    bool isPushed() {
+      return _isPushed;
+    }
+
+    bool isTriggered() {
+      return _isTriggered;
+    }
+
+  private:
+    uint8_t _pin;
+    bool _isTriggered;
+    bool _isPushed;
+
 };
 
 #endif

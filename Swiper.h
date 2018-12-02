@@ -5,7 +5,7 @@
 
 class Swiper {
   public:
-    Swiper(uint32_t pin) : _pin(pin), _pullGesture(new GestureLeft(8, 2)), _pushGesture(new GestureRight(2, 8)) {
+    Swiper(uint8_t pin) : _pin(pin), _pullGesture(new GestureLeft(8, 2)), _pushGesture(new GestureRight(2, 8)) {
 
     }
 
@@ -20,6 +20,10 @@ class Swiper {
 
     GestureState getPushState() {
       return _pullGesture->getState();
+    }
+
+    void init() {
+      pinMode(_pin, INPUT);
     }
 
     void update() {
@@ -49,7 +53,7 @@ class Swiper {
       }
     }
 
-    uint32_t _pin;
+    uint8_t _pin;
     Gesture* _pullGesture;
     Gesture* _pushGesture;
 

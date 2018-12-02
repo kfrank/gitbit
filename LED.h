@@ -2,9 +2,6 @@
 #define LED_H
 
 #include <FastLED.h>
-#define NUM_LEDS 60
-#define DATA_PIN 3
-CRGB leds[NUM_LEDS];
 
 struct Color {
   uint8_t hue;
@@ -14,7 +11,7 @@ struct Color {
 
 class LED {
   public:
-    LED(uint8_t index) : _index(index), _color( {
+    LED(uint8_t index, CRGB* ledStrip) : _index(index), _ledStrip(ledStrip), _color( {
       0, 0, 0
     })
     {
@@ -30,12 +27,13 @@ class LED {
 
     void setColor(uint32_t hue, uint32_t saturation, uint32_t value) {
       //set the led
-      leds[_index] = CHSV(hue, saturation, value);
+      _ledStrip[_index] = CHSV(hue, saturation, value);
       FastLED.show();
     }
 
   private:
     uint8_t _index;
+    CRGB* _ledStrip;
     Color _color;
 };
 

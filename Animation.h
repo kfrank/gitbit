@@ -1,7 +1,7 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-enum class AnimationState {
+enum class AnimationState : uint8_t {
   READY = 0,
   RUNNING = 1,
   COMPLETE = 2
@@ -107,7 +107,7 @@ class SequentialAnimation : public Animation {
 
   private:
     std::vector<Animation*> _animations;
-    uint32_t _currentIndex;
+    uint8_t _currentIndex;
 };
 
 #endif
