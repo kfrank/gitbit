@@ -10,13 +10,15 @@ _isPushed(false) {
 }
 
 void update() {
-  _isPushed = digitalRead(_pin) == HIGH;
+  bool pushed = digitalRead(_pin) == HIGH;
 
-  if(_isPushed && !_isTriggered) {
+  if(_isPushed != pushed && pushed) {
     _isTriggered = true;
   }  else {
     _isTriggered = false;
   }
+
+  _isPushed = pushed;
 }
 
 bool isPushed() {

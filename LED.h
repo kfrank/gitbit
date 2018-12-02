@@ -20,10 +20,8 @@ class LED {
     {
     }
 
-    void off(uint8_t index) {
-      //set color to black
-      leds[index] = CRGB::Black;
-      FastLED.show();
+    void off() {
+      setColor(0,0,0);
     }
 
     void setColor(Color color) {

@@ -5,7 +5,7 @@
 
 class SelectableLCD {
   public:
-    SelectableLCD(uint32_t knobPin): _lcd(0), _knobPin(knobPin), _selectedIndex(0) {
+    SelectableLCD(uint32_t knobPin): _lcd(0), _knobPin(knobPin), _selectedIndex(0), _status() {
       _lcd.begin(16, 2);
       resetLCD();
     }
@@ -23,10 +23,15 @@ class SelectableLCD {
       // if the knob position is different than when it was first read
       if (_selectedIndex != index) {
         _selectedIndex = index;
+        _status = true;
         resetLCD();
 
         _lcd.print(_values[_selectedIndex]);
       }
+    }
+
+    bool isChanged() {
+      //return _state == AnimationState::RUNNING;
     }
 
   private:
@@ -36,9 +41,10 @@ class SelectableLCD {
     }
 
     Adafruit_LiquidCrystal _lcd;
-    uint32_t _knobPin;
+    uint32_t _knobPin = 2;
     std::vector<String> _values;
     uint32_t _selectedIndex;
+    boolean _status = false;
 
 };
 

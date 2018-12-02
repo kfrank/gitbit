@@ -14,6 +14,14 @@ class Swiper {
       delete(_pushGesture);
     }
 
+    GestureState getPullState() {
+      return _pullGesture->getState();
+    }
+
+    GestureState getPushState() {
+      return _pullGesture->getState();
+    }
+
     void update() {
       uint32_t currentPosition = analogRead(_pin);
       currentPosition = map(currentPosition, 0, 1023, 0, 10);
