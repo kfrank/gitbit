@@ -5,24 +5,73 @@
 #include "Animation.h"
 #include "LED.h"
 
-
-class LEDAnimation : public Animation {
+class SolidColorAnimation : public Animation {
   public:
-    LEDAnimation(LED* led, Color startColor, Color endColor, uint32_t duration_msec) :
+    SolidColorAnimation(LED* led, Color color, uint8_t duration_sec) :
       _led(led),
-      _startValue(startColor),
-      _endValue(endColor),
-      _startTime_msec(0),
-      _duration_msec(duration_msec) {
-    }
-
-    void setDuration(uint32_t duration_msec) {
-      _duration_msec = duration_msec;
+      _color(color),
+      _startTime_sec(0),
+      _duration_sec(duration_sec) {
     }
 
     virtual void start() {
       Animation::start();
-      _startTime_msec = millis();
+      _startTime_sec = millis() / 1000;
+    }
+
+    virtual void update() {
+      switch (getState()) {
+        case AnimationState::READY:
+          _led->off();
+          return;
+        case AnimationState::RUNNING:
+          {
+            uint16_t currentTime = millis() / 1000;
+            if (checkComplete(currentTime)) {
+              _state = AnimationState::COMPLETE;
+              return;
+            }
+
+            _led->setColor(_color);
+            return;
+          }
+        case AnimationState::COMPLETE:
+          return;
+      }
+    }
+
+  private:
+    bool checkComplete(uint16_t currentTime) {
+      return (currentTime - _startTime_sec) >= _duration_sec;
+    }
+    Color _color;
+    LED* _led;
+
+    uint8_t _duration_sec;
+    uint16_t _startTime_sec;
+};
+
+class LEDAnimation : public Animation {
+  public:
+    LEDAnimation(LED* led, Color startColor, Color endColor, uint8_t duration_sec) :
+      _led(led),
+      _startValue(startColor),
+      _endValue(endColor),
+      _startTime_sec(0),
+      _duration_sec(duration_sec) {
+    }
+
+    void setLED(LED* led) {
+      _led = led;
+    }
+
+    void setDuration(uint8_t duration_sec) {
+      _duration_sec = duration_sec;
+    }
+
+    virtual void start() {
+      Animation::start();
+      _startTime_sec = millis() / 1000;
     }
 
     virtual void reset() {
@@ -36,7 +85,7 @@ class LEDAnimation : public Animation {
           return;
         case AnimationState::RUNNING:
           {
-            uint32_t currentTime = millis();
+            uint16_t currentTime = millis() / 1000;
             if (checkComplete(currentTime)) {
               _state = AnimationState::COMPLETE;
               return;
@@ -58,24 +107,24 @@ class LEDAnimation : public Animation {
     }
 
   private:
-    bool checkComplete(uint32_t currentTime) {
-      return (currentTime - _startTime_msec) >= _duration_msec;
+    bool checkComplete(uint16_t currentTime) {
+      return (currentTime - _startTime_sec) >= _duration_sec;
     }
 
-    uint32_t linearInterpolation(int16_t startValue, int16_t endValue, uint32_t currentTime) {
-      double deltaTime = (currentTime - _startTime_msec);
-      double progress = ( deltaTime / (double)_duration_msec);
-      int32_t deltaValue = startValue + progress * (endValue - startValue);
+    uint32_t linearInterpolation(int8_t startValue, int8_t endValue, uint16_t currentTime) {
+      float deltaTime = (currentTime - _startTime_sec);
+      float progress = ( deltaTime / (float)_duration_sec);
+      int8_t deltaValue = startValue + progress * (endValue - startValue);
 
-      return std::max((int32_t)0, deltaValue);
+      return std::max((int8_t)0, deltaValue);
     }
 
     Color _startValue;
     Color _endValue;
     LED* _led;
 
-    uint16_t _duration_msec;
-    uint32_t _startTime_msec;
+    uint8_t _duration_sec;
+    uint16_t _startTime_sec;
 };
 
 #endif

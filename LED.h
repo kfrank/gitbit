@@ -11,9 +11,7 @@ struct Color {
 
 class LED {
   public:
-    LED(uint8_t index, CRGB* ledStrip) : _index(index), _ledStrip(ledStrip), _color( {
-      0, 0, 0
-    })
+    LED(CRGB* ledAddr) : _ledAddr(ledAddr)
     {
     }
 
@@ -25,16 +23,14 @@ class LED {
       setColor(color.hue, color.saturation, color.value);
     }
 
-    void setColor(uint32_t hue, uint32_t saturation, uint32_t value) {
+    void setColor(uint8_t hue, uint8_t saturation, uint8_t value) {
       //set the led
-      _ledStrip[_index] = CHSV(hue, saturation, value);
+      *_ledAddr = CHSV(hue, saturation, value);
       FastLED.show();
     }
 
   private:
-    uint8_t _index;
-    CRGB* _ledStrip;
-    Color _color;
+    CRGB* _ledAddr;
 };
 
 #endif

@@ -5,21 +5,16 @@
 
 class Swiper {
   public:
-    Swiper(uint8_t pin) : _pin(pin), _pullGesture(new GestureLeft(8, 2)), _pushGesture(new GestureRight(2, 8)) {
+    Swiper(uint8_t pin) : _pin(pin), _pullGesture(8, 2), _pushGesture(2, 8) {
 
-    }
-
-    ~Swiper() {
-      delete(_pullGesture);
-      delete(_pushGesture);
     }
 
     GestureState getPullState() {
-      return _pullGesture->getState();
+      return _pullGesture.getState();
     }
 
     GestureState getPushState() {
-      return _pullGesture->getState();
+      return _pullGesture.getState();
     }
 
     void init() {
@@ -30,17 +25,17 @@ class Swiper {
       uint32_t currentPosition = analogRead(_pin);
       currentPosition = map(currentPosition, 0, 1023, 0, 10);
 
-      if(_pullGesture->getState() == GestureState::READY) {
-        execute(_pushGesture, currentPosition, "push");
+      if(_pullGesture.getState() == GestureState::READY) {
+        execute(&_pushGesture, currentPosition, "push");
       } 
 
-      if(_pushGesture->getState() == GestureState::READY) {
-        execute(_pullGesture, currentPosition, "pull");
+      if(_pushGesture.getState() == GestureState::READY) {
+        execute(&_pullGesture, currentPosition, "pull");
       }
     }
 
   private:
-    void execute(Gesture* gesture, uint32_t currentPosition, const String& command) {
+    void execute(Gesture* gesture, uint8_t currentPosition, const String& command) {
       if (nullptr == gesture) {
         return;
       }
@@ -54,8 +49,8 @@ class Swiper {
     }
 
     uint8_t _pin;
-    Gesture* _pullGesture;
-    Gesture* _pushGesture;
+    GestureLeft _pullGesture;
+    GestureRight _pushGesture;
 
 };
 

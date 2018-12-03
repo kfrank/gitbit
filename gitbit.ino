@@ -33,18 +33,16 @@ Animation* pushAnimation;
 
 void initializeLeds(const std::vector<uint8_t>& indexes) {
   for (uint8_t index : indexes) {
-    LED* led = new LED(index, ledStrip);
+    LED* led = new LED(&ledStrip[index]);
     leds.push_back(led);
   }
 }
 
 void createPushAnimation() {
-  std::vector<Animation*> pushAnimationScript;
   std::vector<Animation*> sequentialScript;
-  //for (uint8_t index : STATUS_LEDS) {
-    sequentialScript.push_back(new LEDAnimation(leds[0], BLUE, BLUE, 1000));
-    sequentialScript.push_back(new LEDAnimation(leds[1], BLUE, BLUE, 1000));
-  //}
+  for (uint8_t index : STATUS_LEDS) {
+    sequentialScript.push_back(new SolidColorAnimation(leds[index], BLUE, 1000));
+  }
   //pushAnimationScript.push_back(new SequentialAnimation(sequentialScript));
 
   /*std::vector<Animation*> parallelScript;
@@ -54,6 +52,9 @@ void createPushAnimation() {
   pushAnimationScript.push_back(new ParallelAnimation(parallelScript));
   pushAnimationScript.push_back(new LEDAnimation(leds.back(), GREEN, GREEN, 5000));*/
   pushAnimation = new SequentialAnimation(sequentialScript);
+
+  new SolidColorAnimation(leds[0], GREEN, 1000);
+  new SolidColorAnimation(leds[0], GREEN, 1000);
 }
 
 void setup() {
