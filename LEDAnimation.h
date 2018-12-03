@@ -75,10 +75,6 @@ class LEDAnimation : public Animation {
       _startTime_msec = millis();
     }
 
-    virtual void reset() {
-      start() ;
-    }
-
     virtual void update() {
       switch (getState()) {
         case AnimationState::READY:

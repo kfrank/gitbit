@@ -90,6 +90,10 @@ class SequentialAnimation : public Animation {
       }
 
       Animation* animation = _animations[_currentIndex];
+      if(nullptr == animation) {
+        return;
+      }
+
       if (!animation->isRunning()) {
         animation->start();
       }

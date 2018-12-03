@@ -23,16 +23,17 @@ class Gesture {
         case GestureState::IN_PROGRESS:
           if (endGesture(currentPosition)) {
             _state = GestureState::COMPLETE;
-          } else if(currentPosition == 0) {
+          } else if (currentPosition == 0) {
             _state = GestureState::READY;
           }
           break;
         case GestureState::COMPLETE:
-          if (currentPosition == 0) {
-            _state = GestureState::READY;
-          }
           break;
       }
+    }
+
+    virtual void reset() {
+      _state = GestureState::READY;
     }
 
     virtual bool startGesture(uint8_t value) = 0;

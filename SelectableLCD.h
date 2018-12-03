@@ -22,7 +22,7 @@ class SelectableLCD {
       _values = values;
     }
 
-    void update() {
+    bool update() {
       // check to see if the knob changes ??
       uint16_t knobPosition = analogRead(_knobPin);
       uint8_t index = std::min((uint8_t)3, (uint8_t)map(knobPosition, 0, 1023, 0, _values.size()));
@@ -33,11 +33,11 @@ class SelectableLCD {
         resetLCD();
 
         _lcd.print(_values[_selectedIndex]);
-      }
-    }
 
-    bool isChanged() {
-      //return _state == AnimationState::RUNNING;
+        return true;
+      }
+
+      return false;
     }
 
   private:

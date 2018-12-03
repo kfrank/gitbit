@@ -21,8 +21,7 @@ Swiper swiper(3);
 SelectableLCD selectableLCD(2);
 
 //LEDs
-std::vector<LED*> teamLeds;
-std::vector<LED*> statusLeds;
+std::vector<LED*> leds;
 CRGB ledStrip[NUM_LEDS];
 
 //Button
@@ -34,7 +33,7 @@ Animation* progressAnimation;
 Animation* pushCompleteAnimation;
 Animation* pullCompleteAnimation;
 
-void initializeLeds(const std::vector<uint8_t>& indexes, std::vector<LED*>& leds) {
+void initializeLeds(const std::vector<uint8_t>& indexes) {
   for (uint8_t index : indexes) {
     LED* led = new LED(&ledStrip[index]);
     leds.push_back(led);
@@ -43,21 +42,20 @@ void initializeLeds(const std::vector<uint8_t>& indexes, std::vector<LED*>& leds
 
 void createPushPullAnimations() {
   std::vector<Animation*> sequentialScript;
-  for (LED* led : statusLeds) {
-    sequentialScript.push_back(new SolidColorAnimation(led, BLUE, 1));
+  for (uint8_t i = 7; i < 10; i++) {
+    sequentialScript.push_back(new SolidColorAnimation(leds[i], BLUE, 1));
   }
 
   progressAnimation = new SequentialAnimation(sequentialScript);
-
-  pushCompleteAnimation = new SolidColorAnimation(statusLeds.back(), GREEN, 1);
-  pullCompleteAnimation = new SolidColorAnimation(statusLeds.front(), GREEN, 1);
+  pushCompleteAnimation = new SolidColorAnimation(leds[10], GREEN, 1);
+  pullCompleteAnimation = new SolidColorAnimation(leds[6], GREEN, 1);
 }
 
 void setup() {
   Serial.begin(9600);
 
   swiper.init();
-  teamMemberCommitTrigger.init();
+//  teamMemberCommitTrigger.init();
 
   selectableLCD.init(16, 2);
   selectableLCD.setValues(BRANCH_NAMES);
@@ -66,69 +64,86 @@ void setup() {
   FastLED.addLeds<NEOPIXEL, LED_DATA_PIN>(ledStrip, NUM_LEDS);
 
   // initialize LEDs
-  initializeLeds(TEAM_LEDS, teamLeds);
-  initializeLeds(STATUS_LEDS, statusLeds);
+  initializeLeds(TEAM_LEDS);
+  initializeLeds(STATUS_LEDS);
 
-  for (LED* led : teamLeds) {
-    teamCommitAnimations.push_back(new LEDAnimation(led, GREEN, BLUE, 10));
+  for (uint8_t i = 0; i < 6; i++) {
+    teamCommitAnimations.push_back(new LEDAnimation(leds[i], GREEN, BLUE, 10));
   }
 
   createPushPullAnimations();
 }
 
 void loop() {
-  swiper.update();
-  selectableLCD.update();
 
-  if (!teamCommitAnimations[0]->isRunning()) {
-    teamCommitAnimations[0]->start();
+  for (Animation* animation : teamCommitAnimations) {
+    animation->update();
   }
 
-  teamCommitAnimations[0]->update();
+  // If you change branch, commit lights should clear
 
-  if (teamCommitAnimations[0]->isComplete()) {
-    teamCommitAnimations[0]->reset();
+  if (selectableLCD.update()) {
+    for (Animation* animation : teamCommitAnimations) {
+      animation->reset();
+    }
   }
 
+  // If you press button, one commit should light up
+
+  teamMemberCommitTrigger.update();
+
+  if (teamMemberCommitTrigger.isTriggered()) {
+    teamCommitAnimations[random(6)]->start();
+  }
+
+  // If you pull, the status leds should execute
+  progressAnimation->update();
+  pullCompleteAnimation->update();
+
+  bool actionComplete = swiper.update();
+  if (actionComplete && swiper.getPullState() == GestureState::COMPLETE) {
+    progressAnimation->start();
+  }
+  if(progressAnimation->isComplete() && swiper.getPullState() == GestureState::COMPLETE) {
+    pullCompleteAnimation->start();
+    swiper.reset();
+  }
+
+  //If you push, status leds should execute
+  pushCompleteAnimation->update();
+  if (actionComplete && swiper.getPushState() == GestureState::COMPLETE) {
+    progressAnimation->start();
+  }
+  if(progressAnimation->isComplete() && swiper.getPushState() == GestureState::COMPLETE) {
+    pushCompleteAnimation->start();
+    swiper.reset();
+  }
   
 
-  // LEDs
-
-
-  // Triggers
-  //
-
-  // Change branch
-  /*if (_selectedIndex != index) { If knob index is different
-    contributerAnimation->reset();
-    }*/
+  // Testing >>>
 
   // Button
-  /*button.update();
+  /* button.update();
 
     if (button.isTriggered()) {
-    contributerAnimation->start();
+     contributerAnimation->start();
     }
 
     contributerAnimation->update();
 
     // Pull
     if (swiper.getPullState() == GestureState::COMPLETE) {
-    Serial.println("pull complete");
-    // Sequence animation
-    if (!statusParallelAnimation->isRunning()) {
-      statusParallelAnimation->start();
-    }
+     Serial.println("pull complete");
+     // Sequence animation
+     if (!statusParallelAnimation->isRunning()) {
+       statusParallelAnimation->start();
+     }
 
-
-    // Parallel animation
-    // Black
-    // Set 11 to Green
     }
     statusParallelAnimation->update();
 
     if (statusParallelAnimation->isComplete()) {
-    statusParallelAnimation->reset();
+     statusParallelAnimation->reset();
     }*/
 
   /*if (!testAnimation->isRunning()) {

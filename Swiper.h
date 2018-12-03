@@ -14,28 +14,36 @@ class Swiper {
     }
 
     GestureState getPushState() {
-      return _pullGesture.getState();
+      return _pushGesture.getState();
+    }
+
+    void reset() {
+      _pullGesture.reset();
+      _pushGesture.reset();
     }
 
     void init() {
       pinMode(_pin, INPUT);
     }
 
-    void update() {
+    bool update() {
       uint32_t currentPosition = analogRead(_pin);
       currentPosition = map(currentPosition, 0, 1023, 0, 10);
 
-      if(_pullGesture.getState() == GestureState::READY) {
-        execute(&_pushGesture, currentPosition, "push");
-      } 
-
-      if(_pushGesture.getState() == GestureState::READY) {
-        execute(&_pullGesture, currentPosition, "pull");
+      bool actionComplete = false;
+      if (_pullGesture.getState() == GestureState::READY) {
+        actionComplete |= execute(&_pushGesture, currentPosition, "push");
       }
+
+      if (_pushGesture.getState() == GestureState::READY) {
+        actionComplete |= execute(&_pullGesture, currentPosition, "pull");
+      }
+
+      return actionComplete;
     }
 
   private:
-    void execute(Gesture* gesture, uint8_t currentPosition, const String& command) {
+    bool execute(Gesture* gesture, uint8_t currentPosition, const String& command) {
       if (nullptr == gesture) {
         return;
       }
@@ -45,7 +53,9 @@ class Swiper {
 
       if (prevState == GestureState::IN_PROGRESS && gesture->getState() == GestureState::COMPLETE) {
         Serial.println(command);
+        return true;
       }
+      return false;
     }
 
     uint8_t _pin;
