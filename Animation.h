@@ -97,6 +97,7 @@ class SequentialAnimation : public Animation {
       animation->update();
 
       if (animation->isComplete()) {
+        animation->update();
         _currentIndex++;
       }
 

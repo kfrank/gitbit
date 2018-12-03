@@ -10,8 +10,8 @@ const std::vector<uint8_t> STATUS_LEDS = {7, 8, 9, 10, 11};
 const uint8_t NUM_LEDS = 60;
 const uint8_t LED_DATA_PIN = 3;
 
-const Color GREEN = {255, 255, 200};
-const Color BLUE = {180, 255, 200};
+const Color GREEN = {255, 255, 100};
+const Color BLUE = {180, 255, 100};
 const Color BLACK = {0, 0, 0};
 
 //Swiper
@@ -21,7 +21,8 @@ Swiper swiper(3);
 SelectableLCD selectableLCD(2);
 
 //LEDs
-std::vector<LED*> leds;
+std::vector<LED*> teamLeds;
+std::vector<LED*> statusLeds;
 CRGB ledStrip[NUM_LEDS];
 
 //Button
@@ -29,32 +30,27 @@ Button teamMemberCommitTrigger(12);
 
 //Animations
 std::vector<Animation*> teamCommitAnimations;
-Animation* pushAnimation;
+Animation* progressAnimation;
+Animation* pushCompleteAnimation;
+Animation* pullCompleteAnimation;
 
-void initializeLeds(const std::vector<uint8_t>& indexes) {
+void initializeLeds(const std::vector<uint8_t>& indexes, std::vector<LED*>& leds) {
   for (uint8_t index : indexes) {
     LED* led = new LED(&ledStrip[index]);
     leds.push_back(led);
   }
 }
 
-void createPushAnimation() {
+void createPushPullAnimations() {
   std::vector<Animation*> sequentialScript;
-  for (uint8_t index : STATUS_LEDS) {
-    sequentialScript.push_back(new SolidColorAnimation(leds[index], BLUE, 1000));
+  for (LED* led : statusLeds) {
+    sequentialScript.push_back(new SolidColorAnimation(led, BLUE, 1));
   }
-  //pushAnimationScript.push_back(new SequentialAnimation(sequentialScript));
 
-  /*std::vector<Animation*> parallelScript;
-  for (uint8_t index : STATUS_LEDS) {
-    parallelScript.push_back(new LEDAnimation(leds[index], BLACK, BLACK, 1000));
-  }
-  pushAnimationScript.push_back(new ParallelAnimation(parallelScript));
-  pushAnimationScript.push_back(new LEDAnimation(leds.back(), GREEN, GREEN, 5000));*/
-  pushAnimation = new SequentialAnimation(sequentialScript);
+  progressAnimation = new SequentialAnimation(sequentialScript);
 
-  new SolidColorAnimation(leds[0], GREEN, 1000);
-  new SolidColorAnimation(leds[0], GREEN, 1000);
+  pushCompleteAnimation = new SolidColorAnimation(statusLeds.back(), GREEN, 1);
+  pullCompleteAnimation = new SolidColorAnimation(statusLeds.front(), GREEN, 1);
 }
 
 void setup() {
@@ -70,46 +66,31 @@ void setup() {
   FastLED.addLeds<NEOPIXEL, LED_DATA_PIN>(ledStrip, NUM_LEDS);
 
   // initialize LEDs
-  initializeLeds(STATUS_LEDS);
-  initializeLeds(TEAM_LEDS);
+  initializeLeds(TEAM_LEDS, teamLeds);
+  initializeLeds(STATUS_LEDS, statusLeds);
 
-  for (uint8_t index : TEAM_LEDS) {
-    teamCommitAnimations.push_back(new LEDAnimation(leds[index], GREEN, BLUE, 10000));
+  for (LED* led : teamLeds) {
+    teamCommitAnimations.push_back(new LEDAnimation(led, GREEN, BLUE, 10));
   }
 
-  createPushAnimation();
-
-
-  //animationScript.push_back(new LEDAnimation(led, {20, 255, 150}, {123, 255, 100}, 2000));
-
-  /*statusParallelAnimation = new ParallelAnimation(animationScript);
-
-    LED* led = new LED(teamLeds[3]);
-    contributerAnimation = new LEDAnimation(led, {255, 255, 200}, {180, 255, 80}, 20000);
-
-
-    std::vector<Animation*> script;
-
-    script.push_back(new LEDAnimation(ledStrip[0], {20, 255, 150}, {123, 255, 100}, 2000));
-    script.push_back(new LEDAnimation(ledStrip[1], {20, 255, 150}, {123, 255, 100}, 2000));
-
-    std::vector<Animation*> parallelScript;
-    parallelScript.push_back(new LEDAnimation(ledStrip[0], {20, 255, 150}, {123, 255, 100}, 2000));
-    parallelScript.push_back(new LEDAnimation(ledStrip[1], {20, 255, 150}, {123, 255, 100}, 2000));
-
-    script.push_back(new ParallelAnimation(parallelScript));
-
-    testAnimation = new SequentialAnimation(script);*/
-
+  createPushPullAnimations();
 }
-
-
 
 void loop() {
   swiper.update();
   selectableLCD.update();
 
+  if (!teamCommitAnimations[0]->isRunning()) {
+    teamCommitAnimations[0]->start();
+  }
 
+  teamCommitAnimations[0]->update();
+
+  if (teamCommitAnimations[0]->isComplete()) {
+    teamCommitAnimations[0]->reset();
+  }
+
+  
 
   // LEDs
 
