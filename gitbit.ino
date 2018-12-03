@@ -106,7 +106,11 @@ void loop() {
   }
   if(progressAnimation->isComplete() && swiper.getPullState() == GestureState::COMPLETE) {
     pullCompleteAnimation->start();
+    progressAnimation->reset();
     swiper.reset();
+    for (Animation* animation : teamCommitAnimations) {
+      animation->reset();
+    }
   }
 
   //If you push, status leds should execute
@@ -116,53 +120,8 @@ void loop() {
   }
   if(progressAnimation->isComplete() && swiper.getPushState() == GestureState::COMPLETE) {
     pushCompleteAnimation->start();
+    progressAnimation->reset();
     swiper.reset();
   }
   
-
-  // Testing >>>
-
-  // Button
-  /* button.update();
-
-    if (button.isTriggered()) {
-     contributerAnimation->start();
-    }
-
-    contributerAnimation->update();
-
-    // Pull
-    if (swiper.getPullState() == GestureState::COMPLETE) {
-     Serial.println("pull complete");
-     // Sequence animation
-     if (!statusParallelAnimation->isRunning()) {
-       statusParallelAnimation->start();
-     }
-
-    }
-    statusParallelAnimation->update();
-
-    if (statusParallelAnimation->isComplete()) {
-     statusParallelAnimation->reset();
-    }*/
-
-  /*if (!testAnimation->isRunning()) {
-    testAnimation->start();
-    }
-
-    testAnimation->update();
-
-    if (testAnimation->isComplete()) {
-    testAnimation->reset();
-    }*/
-
-
-
-  // Pull
-  /* if(_pullGesture->getState() == GestureState::READY) {
-     // Sequence animation reverse
-     // Parallel animation
-     // Black
-     // Set 7 to Green
-    }  */
 }

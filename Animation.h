@@ -80,6 +80,11 @@ class SequentialAnimation : public Animation {
 
     virtual void reset() {
       _currentIndex = 0;
+
+      for (Animation* animation : _animations) {
+        animation->reset();
+      }
+
       Animation::reset();
     }
 
@@ -90,7 +95,7 @@ class SequentialAnimation : public Animation {
       }
 
       Animation* animation = _animations[_currentIndex];
-      if(nullptr == animation) {
+      if (nullptr == animation) {
         return;
       }
 
