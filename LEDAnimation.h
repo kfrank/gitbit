@@ -82,6 +82,7 @@ class LEDAnimation : public Animation {
           return;
         case AnimationState::RUNNING:
           {
+            
             uint32_t currentTime = millis();
             if (checkComplete(currentTime)) {
               _state = AnimationState::COMPLETE;
@@ -89,9 +90,9 @@ class LEDAnimation : public Animation {
             }
 
             Color currentColor = {
-              linearInterpolation(_startValue.hue, _endValue.hue, currentTime),
-              linearInterpolation(_startValue.saturation, _endValue.saturation, currentTime),
-              linearInterpolation(_startValue.value, _endValue.value, currentTime)
+              linearInterpolation(_startValue.red, _endValue.red, currentTime),
+              linearInterpolation(_startValue.green, _endValue.green, currentTime),
+              linearInterpolation(_startValue.blue, _endValue.blue, currentTime)
             };
 
             _led->setColor(currentColor);

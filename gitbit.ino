@@ -4,14 +4,12 @@
 #include "Swiper.h"
 
 // Configuration
-const std::vector<String> BRANCH_NAMES = {"design/headersidebar", "design/challenges", "dev/npm", "kf/home_news"};
+const std::vector<String> BRANCH_NAMES = {"gitbit/testing", "gitbit/design", "gitbit/source", "gitbit/master"};
 const std::vector<uint8_t> TEAM_LEDS = {1, 2, 3, 4, 5, 6};
 const std::vector<uint8_t> STATUS_LEDS = {7, 8, 9, 10, 11};
-const uint8_t NUM_LEDS = 60;
-const uint8_t LED_DATA_PIN = 3;
 
-const Color GREEN = {255, 255, 100};
-const Color BLUE = {180, 255, 100};
+const Color GREEN = {0, 180, 0};
+const Color BLUE = {0, 0, 200};
 const Color BLACK = {0, 0, 0};
 
 //Swiper
@@ -21,8 +19,9 @@ Swiper swiper(3);
 SelectableLCD selectableLCD(2);
 
 //LEDs
+LED teamLed(2);
 std::vector<LED*> leds;
-CRGB ledStrip[NUM_LEDS];
+//CRGB ledStrip[NUM_LEDS];
 
 //Button
 Button teamMemberCommitTrigger(12);
@@ -35,33 +34,46 @@ Animation* pullCompleteAnimation;
 
 void initializeLeds(const std::vector<uint8_t>& indexes) {
   for (uint8_t index : indexes) {
-    LED* led = new LED(&ledStrip[index]);
+    LED* led = new LED(index);
     leds.push_back(led);
   }
 }
 
 void createPushPullAnimations() {
   std::vector<Animation*> sequentialScript;
-  for (uint8_t i = 7; i < 10; i++) {
+  for (uint8_t i = 6; i < 11; i++) {
     sequentialScript.push_back(new SolidColorAnimation(leds[i], BLUE, 1));
   }
 
   progressAnimation = new SequentialAnimation(sequentialScript);
-  pushCompleteAnimation = new SolidColorAnimation(leds[10], GREEN, 1);
-  pullCompleteAnimation = new SolidColorAnimation(leds[6], GREEN, 1);
+  pushCompleteAnimation = new SolidColorAnimation(leds[10], GREEN, 2);
+  pullCompleteAnimation = new SolidColorAnimation(leds[6], GREEN, 2);
+}
+
+// Adafruit Neopixel library example function
+void colorWipe(uint32_t c, uint8_t wait) {
+  for(uint16_t i=0; i<12; i++) {
+    ledStrip.setPixelColor(i, c);
+    ledStrip.show();
+    delay(wait);
+  }
 }
 
 void setup() {
   Serial.begin(9600);
 
   swiper.init();
-//  teamMemberCommitTrigger.init();
+  teamMemberCommitTrigger.init();
 
   selectableLCD.init(16, 2);
   selectableLCD.setValues(BRANCH_NAMES);
 
   // LED setup
-  FastLED.addLeds<NEOPIXEL, LED_DATA_PIN>(ledStrip, NUM_LEDS);
+  ledStrip.setBrightness(BRIGHTNESS);
+  ledStrip.begin();
+  colorWipe(ledStrip.Color(0, 180, 0), 50);
+  colorWipe(ledStrip.Color(0, 0, 200), 50);
+  colorWipe(ledStrip.Color(0, 0, 0, 255), 50);
 
   // initialize LEDs
   initializeLeds(TEAM_LEDS);
@@ -76,34 +88,44 @@ void setup() {
 
 void loop() {
 
+  // Non-blocking team led animations
+  
   for (Animation* animation : teamCommitAnimations) {
     animation->update();
   }
 
   // If you change branch, commit lights should clear
 
-  if (selectableLCD.update()) {
+  if (selectableLCD.update()) { 
     for (Animation* animation : teamCommitAnimations) {
       animation->reset();
     }
   }
 
-  // If you press button, one commit should light up
-
+  // Non-blocking team commit led button trigger
+  
   teamMemberCommitTrigger.update();
+
+  // If you press button, one commit should light up
 
   if (teamMemberCommitTrigger.isTriggered()) {
     teamCommitAnimations[random(6)]->start();
   }
 
-  // If you pull, the status leds should execute
-  progressAnimation->update();
-  pullCompleteAnimation->update();
 
+  // Non-blocking status led animations 
+  
+  progressAnimation->update();
   bool actionComplete = swiper.update();
+  
+  // If you pull, the status leds should execute
+  
+  pullCompleteAnimation->update();
+  
   if (actionComplete && swiper.getPullState() == GestureState::COMPLETE) {
     progressAnimation->start();
   }
+  
   if(progressAnimation->isComplete() && swiper.getPullState() == GestureState::COMPLETE) {
     pullCompleteAnimation->start();
     progressAnimation->reset();
@@ -113,11 +135,14 @@ void loop() {
     }
   }
 
-  //If you push, status leds should execute
+  // If you push, status leds should execute
+  
   pushCompleteAnimation->update();
+  
   if (actionComplete && swiper.getPushState() == GestureState::COMPLETE) {
     progressAnimation->start();
   }
+  
   if(progressAnimation->isComplete() && swiper.getPushState() == GestureState::COMPLETE) {
     pushCompleteAnimation->start();
     progressAnimation->reset();

@@ -1,17 +1,23 @@
 #ifndef LED_H
 #define LED_H
 
-#include <FastLED.h>
+#include <Adafruit_NeoPixel.h>
+const uint8_t NUM_LEDS = 60;
+const uint8_t LED_DATA_PIN = 3;
+#define BRIGHTNESS 30
+Adafruit_NeoPixel ledStrip = Adafruit_NeoPixel(NUM_LEDS, LED_DATA_PIN, NEO_RGB + NEO_KHZ800);
+
+//#include <FastLED.h>
 
 struct Color {
-  uint8_t hue;
-  uint8_t saturation;
-  uint8_t value;
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
 };
 
 class LED {
   public:
-    LED(CRGB* ledAddr) : _ledAddr(ledAddr)
+    LED(uint16_t* ledAddr) : _ledAddr(ledAddr)
     {
     }
 
@@ -20,17 +26,17 @@ class LED {
     }
 
     void setColor(Color color) {
-      setColor(color.hue, color.saturation, color.value);
+      setColor(color.red, color.green, color.blue);
     }
 
-    void setColor(uint8_t hue, uint8_t saturation, uint8_t value) {
+    void setColor(uint8_t red, uint8_t green, uint8_t blue) {
       //set the led
-      *_ledAddr = CHSV(hue, saturation, value);
-      FastLED.show();
+      ledStrip.setPixelColor(_ledAddr, ledStrip.Color(red, green, blue));
+      ledStrip.show();
     }
 
   private:
-    CRGB* _ledAddr;
+    uint16_t* _ledAddr;
 };
 
 #endif
