@@ -1,8 +1,6 @@
 import processing.serial.*;
 Serial myPort;  // Create object from Serial class
 String val;     // Data received from the serial port
-JSONArray jsonBranches;
-JSONArray jsonCommits;
 
 String[] cmdPushed = {"/Users/klarefrank/Dev/gitbit-output/pushed.sh"};
 String[] cmdPulled = {"/Users/klarefrank/Dev/gitbit-output/pulled.sh"};
