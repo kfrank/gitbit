@@ -52,7 +52,7 @@ class Swiper {
       gesture->update(currentPosition);
 
       if (prevState == GestureState::IN_PROGRESS && gesture->getState() == GestureState::COMPLETE) {
-        Serial.println(command);
+        Serial.println(command); // Picked up by Processing to execute bash scripts
         return true;
       }
       return false;

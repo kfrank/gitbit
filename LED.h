@@ -7,8 +7,6 @@ const uint8_t LED_DATA_PIN = 3;
 #define BRIGHTNESS 30
 Adafruit_NeoPixel ledStrip = Adafruit_NeoPixel(NUM_LEDS, LED_DATA_PIN, NEO_RGB + NEO_KHZ800);
 
-//#include <FastLED.h>
-
 struct Color {
   uint8_t red;
   uint8_t green;

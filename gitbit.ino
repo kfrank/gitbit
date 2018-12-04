@@ -42,15 +42,15 @@ void initializeLeds(const std::vector<uint8_t>& indexes) {
 void createPushPullAnimations() {
   std::vector<Animation*> sequentialScript;
   for (uint8_t i = 6; i < 11; i++) {
-    sequentialScript.push_back(new SolidColorAnimation(leds[i], BLUE, 1));
+    sequentialScript.push_back(new SolidColorAnimation(leds[i], BLUE, 250));
   }
 
   progressAnimation = new SequentialAnimation(sequentialScript);
-  pushCompleteAnimation = new SolidColorAnimation(leds[10], GREEN, 2);
-  pullCompleteAnimation = new SolidColorAnimation(leds[6], GREEN, 2);
+  pushCompleteAnimation = new SolidColorAnimation(leds[10], GREEN, 1000);
+  pullCompleteAnimation = new SolidColorAnimation(leds[6], GREEN, 1000);
 }
 
-// Adafruit Neopixel library example function
+// Adafruit Neopixel library example function to cycle through led colors
 void colorWipe(uint32_t c, uint8_t wait) {
   for(uint16_t i=0; i<12; i++) {
     ledStrip.setPixelColor(i, c);
@@ -71,6 +71,8 @@ void setup() {
   // LED setup
   ledStrip.setBrightness(BRIGHTNESS);
   ledStrip.begin();
+
+  // These are ok to be blocking, since we don't want anything to happen when everything is loading anyway
   colorWipe(ledStrip.Color(0, 180, 0), 50);
   colorWipe(ledStrip.Color(0, 0, 200), 50);
   colorWipe(ledStrip.Color(0, 0, 0, 255), 50);
@@ -80,13 +82,14 @@ void setup() {
   initializeLeds(STATUS_LEDS);
 
   for (uint8_t i = 0; i < 6; i++) {
-    teamCommitAnimations.push_back(new LEDAnimation(leds[i], GREEN, BLUE, 10));
+    teamCommitAnimations.push_back(new DualColorAnimation(leds[i], GREEN, BLUE, 20000));
   }
 
   createPushPullAnimations();
 }
 
 void loop() {
+  
 
   // Non-blocking team led animations
   
@@ -99,6 +102,10 @@ void loop() {
   if (selectableLCD.update()) { 
     for (Animation* animation : teamCommitAnimations) {
       animation->reset();
+    }
+    if (selectableLCD.getIndex() == 1) {
+      teamCommitAnimations[0]->start();
+      teamCommitAnimations[3]->start();
     }
   }
 

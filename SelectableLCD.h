@@ -18,16 +18,21 @@ class SelectableLCD {
       pinMode(_knobPin, INPUT);
     }
 
+    uint8_t getIndex(){
+      uint16_t knobPosition = analogRead(_knobPin);
+      uint8_t index = std::min((uint8_t)3, (uint8_t)map(knobPosition, 0, 1023, 0, _values.size()));
+      return index;
+    }
+
     void setValues(std::vector<String> values) {
       _values = values;
     }
 
     bool update() {
-      // check to see if the knob changes ??
       uint16_t knobPosition = analogRead(_knobPin);
       uint8_t index = std::min((uint8_t)3, (uint8_t)map(knobPosition, 0, 1023, 0, _values.size()));
 
-      // if the knob position is different than when it was first read
+      // if the knob position is different
       if (_selectedIndex != index) {
         _selectedIndex = index;
         resetLCD();
@@ -50,6 +55,7 @@ class SelectableLCD {
     uint8_t _knobPin = 2;
     std::vector<String> _values;
     int8_t _selectedIndex;
+    int8_t _index;
 
 };
 
